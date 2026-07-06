@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $1 -eq 0 ]; then
+if [ "$1" -eq 0 ]; then
 ports=(6443 2379 2380 10250 10259 10257)
 
 for port in "${ports[@]}"; do
@@ -51,15 +51,13 @@ fi
 
 sudo apt remove $(dpkg --get-selections docker.io docker-compose docker-compose-v2 docker-doc podman-docker containerd runc | cut -f1)
 
-docker_list=$(ls -la /etc/apt/sources.list.d/docker.list &>/dev/null)
-
 if [ -f /etc/apt/sources.list.d/docker.list ]; then
 	sudo rm /etc/apt/sources.list.d/docker.list
 fi
 
 # Add Docker's official GPG key:
 sudo apt update
-sudo apt install ca-certificates curl
+sudo apt install -y ca-certificates curl
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -76,7 +74,7 @@ EOF
 
 sudo apt update
 
-sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 sudo systemctl status docker
 
@@ -93,11 +91,11 @@ elif [ "$1" -eq 1 ]; then
     sudo systemctl restart containerd
 fi
 
-if [ $1 -eq 2 ]; then
+if [ "$1" -eq 2 ]; then
 
 	sudo apt-get update
 	sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
-	mdkir -p /etc/apt/keyrings
+	sudo mkdir -p /etc/apt/keyrings
 	if [ ! -f /etc/apt/keyrings/kubernetes-apt-keyring.gpg ]; then
 		curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.36/deb/Release.key |\
 			sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
