@@ -114,13 +114,21 @@ if [ "$1" -eq 2 ]; then
 	kubeadm version
 	kubectl version --client
 fi
-
 if [ "$1" = 'init' ]; then
-	if [ ! -f kubeadm-config.yaml ]; then
-		kubeadm config print init-defaults > kubeadm-config.yaml
-	fi
-	ip=$(ip -4 a show enp0s1 | grep inet | awk '{print $2}' | cut -d/ -f1)
-	sudo sed -i "s/advertiseAddress: 1.2.3.4/advertiseAddress: $ip/" kubeadm-config.yaml
-	sudo sed -i '/kind: ClusterConfiguration/a controlPlaneEndpoint: "'"$ip"':6443"' kubeadm-config.yaml
-	sudo sed -i '/kind: ClusterConfiguration/networking:/a podSubnet: 10.244.0.0/16' kubeadm-config.yaml
+    if [ ! -f kubeadm-config.yaml ]; then
+        kubeadm config print init-defaults > kubeadm-config.yaml
+    fi
+    ip=$(ip -4 a show enp0s1 | grep inet | awk '{print $2}' | cut -d/ -f1)
+
+    sudo sed -i "s/advertiseAddress: 1.2.3.4/advertiseAddress: $ip/" kubeadm-config.yaml
+
+    if ! grep -q "controlPlaneEndpoint" kubeadm-config.yaml; then
+        sudo sed -i "/kind: ClusterConfiguration/a controlPlaneEndpoint: \"$ip:6443\"" kubeadm-config.yaml
+    fi
+
+    if ! grep -q "podSubnet" kubeadm-config.yaml; then
+        sudo sed -i '\#networking:#a\  podSubnet: 10.244.0.0/16' kubeadm-config.yaml
+    fi
+    cat kubeadm-config.yaml
+    kubeadm config validate --config=kubeadm-config.yaml
 fi
