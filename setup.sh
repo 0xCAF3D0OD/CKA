@@ -88,6 +88,7 @@ elif [ "$1" -eq 1 ]; then
     if [[ "$toml" -eq 1 && "$systemcgroup" = 'false' ]]; then
         sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
     fi
+    grep "SystemdCgroup" /etc/containerd/config.toml
     sudo systemctl restart containerd
 fi
 
