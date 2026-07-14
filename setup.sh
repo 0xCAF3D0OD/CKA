@@ -130,5 +130,20 @@ if [ "$1" = 'init' ]; then
         sudo sed -i '\#networking:#a\  podSubnet: 10.244.0.0/16' kubeadm-config.yaml
     fi
     cat kubeadm-config.yaml
-    kubeadm config validate --config=kubeadm-config.yaml
+    kubeadm config validate --config=kubeadm-config.yaml &> /dev/null
+    if [ $? -eq 0 ]; then
+	sudo kubeadm init --config kubeadm-config.yaml > log-init.txt
+	grep -q "Your Kubernetes control-plane has initialized successfully!" log-init.txt	
+	if [ $? -eq 0 ]; then
+		mkdir -p $HOME/.kube
+		sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+		sudo chown $(id -u):$(id -g) $HOME/.kube/config
+ 		kubectl get nodes &> /dev/null
+		if [ $? -ne 0 ]; then
+			echo "kubeadm init failed, exit programme"
+			exit 1
+		fi
+	fi
 fi
+fi
+
